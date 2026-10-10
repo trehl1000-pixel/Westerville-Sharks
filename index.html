@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sharks 13U – Trend Analysis (Fall 2026 roster)</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--tx:#1a2330;--mu:#5d6b7c;--bd:#dde3ea;--g:#1f9d55;--r:#d64545;--a:#d98a00;--b:#2f6fdb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151c;--card:#19212b;--tx:#e8edf3;--mu:#98a6b6;--bd:#2a3542;--g:#3ec97a;--r:#ff6b6b;--a:#f0a62b;--b:#6ea2ff}}
+:root[data-theme="dark"]{--bg:#10151c;--card:#19212b;--tx:#e8edf3;--mu:#98a6b6;--bd:#2a3542;--g:#3ec97a;--r:#ff6b6b;--a:#f0a62b;--b:#6ea2ff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 -apple-system,system-ui,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:21px;margin:4px 0}h2{font-size:17px;margin:26px 0 8px}h3{font-size:14px;margin:0 0 6px}
+.sub{color:var(--mu);font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin:10px 0}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.k{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px}
+.k b{font-size:20px;display:block}.k span{font-size:12px;color:var(--mu)}
+.up{color:var(--g)}.dn{color:var(--r)}
+canvas{max-width:100%}
+.ch{position:relative;height:230px}
+.grid2{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:640px){.grid2{grid-template-columns:1fr 1fr}.kpis{grid-template-columns:repeat(4,1fr)}}
+ul{margin:4px 0;padding-left:18px}li{margin:3px 0}
+.sw{display:grid;grid-template-columns:1fr;gap:8px}@media(min-width:640px){.sw{grid-template-columns:1fr 1fr}}
+.sw .card{margin:0}.sw h3{margin-bottom:4px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:520px}
+th,td{padding:5px 6px;text-align:center;border-bottom:1px solid var(--bd)}th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card)}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:99px;border:1px solid var(--bd);color:var(--mu)}
+.note{font-size:12px;color:var(--mu)}
+</style></head><body><main>
+<h1>⚾ Sharks – Trend Analysis</h1>
+<div class="sub">Fall 2023 → Fall 2026 · 10U → 13U · 12 players on the Fall 2026 roster only · Fall 2026 = 7 games</div>
+
+<div class="kpis" style="margin-top:12px">
+<div class="k"><b>1.082</b><span>Team OPS, Fall 2026 (1.00–1.18 every season)</span></div>
+<div class="k"><b class="up">67.7%</b><span>Quality AB rate (up from 53% in 2023)</span></div>
+<div class="k"><b class="up">8.7%</b><span>Strikeout rate (18.6% in 2023)</span></div>
+<div class="k"><b class="dn">23%</b><span>Walks per batter faced (own pitchers)</span></div>
+</div>
+
+<h2>Team trends</h2>
+<div class="card"><h3>Slash line (roster-only)</h3><div class="ch"><canvas id="c1"></canvas></div></div>
+<div class="grid2">
+<div class="card"><h3>Plate discipline &amp; quality at-bats (%)</h3><div class="ch"><canvas id="c2"></canvas></div></div>
+<div class="card"><h3>Power: extra-base hits per 100 PA, and HR</h3><div class="ch"><canvas id="c3"></canvas></div></div>
+</div>
+<div class="card"><h3>Pitching: runs-allowed-style ERA (6 inn) and walks per batter faced (%)</h3><div class="ch"><canvas id="c4"></canvas></div>
+<div class="note">Walk rate fell from 27% to 11% by Spring 2025, then climbed back to 23% this fall. ERA is on a 6-inning basis.</div></div>
+
+<h2>Player OPS by season</h2>
+<div class="card tw"><table id="t"></table>
+<div class="note" style="margin-top:6px">Green ≥ 1.200 · light green 1.000–1.199 · amber .800–.999 · red &lt; .800. Fall seasons are 6–11 games and Fall 2026 is 7, so single-fall swings are noisy. Last column = Fall 2026 minus Spring 2026.</div></div>
+
+<h2>Milestones</h2>
+<div class="card"><ul>
+<li><b>Spring 2026 power surge:</b> 23 team HR (previous best: 6), 11.2 XBH per 100 PA.</li>
+<li><b>Dominic Frate:</b> 10 HR, 1.749 OPS, 1.094 SLG, 6 triples in Spring 2026. Career .527 AVG with 13 HR in 168 PA. Contact rate 65% → 89% → 100%; strikeout rate 31% → 8% → 0%.</li>
+<li><b>Chase Rehl:</b> 55 RBI and 21 XBH in Spring 2026; career-high 1.450 OPS this fall. Fly-ball rate 18% → 30% → 56%.</li>
+<li><b>Career leaders on this roster:</b> Buss 181 SB and 188 R; Rehl 147 H, 154 RBI and 7 HR; Thomas Jr. .446 AVG; Muller 144 R.</li>
+<li><b>Lucas Stanley, Fall 2026:</b> career-best 1.225 OPS, 6.3% K (was 24–31%), 6.0 BB/K.</li>
+<li><b>Easton Muller:</b> rebound from .700 OPS (Fall 2025) to 1.391, with 46% line drives.</li>
+<li><b>Fielding:</b> Buss, Rehl, Frate, English, Stanley, Bryant and Caterino are all at 1.000 this fall.</li>
+</ul></div>
+
+<h2>Keep on trajectory</h2>
+<div class="card"><ul>
+<li><b>Strikeout control and quality at-bats.</b> K% 18.6 → 8.7 and QAB% 53 → 68. This is the clearest multi-year trend and it has held through three level jumps.</li>
+<li><b>Frate's contact skills</b> and <b>Rehl's loft and hard contact.</b> These two are the engine of the lineup.</li>
+<li><b>Stanley's approach</b> (walks up, strikeouts way down) and <b>Muller's line-drive contact.</b></li>
+<li><b>Baserunning:</b> ~95% steal success over 3 years (36 SB in 7 games this fall).</li>
+<li><b>Clean glove work:</b> several regulars are error-free so far.</li>
+</ul></div>
+
+<h2>Deviate from</h2>
+<div class="card"><ul>
+<li><b>Pitching command.</b> The staff has 40 BB in 29.2 IP (WHIP 2.66). Buss: 13 BB and 4 K in 4.1 IP (K/BB 0.31, down from 1.5–4.1). Rehl: K/BB 0.38. Few strikes thrown → zone-first bullpen work.</li>
+<li><b>Larken Buss's batting slide.</b> OPS 1.23 → 1.00 → .88, line drives 22% → 8%, ground balls 50%, BABIP .50 → .33. Walks are covering for it (OBP .524).</li>
+<li><b>Anthony Thomas Jr.'s short at-bats.</b> QAB 47% (71% in Spring 2025), 2.76 pitches per PA (lowest of anyone in this data), and 1-for-2 on steals.</li>
+<li><b>Ground-ball tilt</b> for Buss, Bryant, Caterino and English (46–78% GB). Cameron English has 0 XBH and a 9.5% six-plus-pitch rate this fall.</li>
+<li><b>Walk-heavy lineup (26% BB).</b> It lifts OBP, but if it reflects taking hittable strikes, power stays stuck at 7.7 XBH per 100 PA vs. 11.2 last spring.</li>
+</ul></div>
+
+<h2>SWOT</h2>
+<div class="sw">
+<div class="card"><h3 class="up">Strengths</h3><ul><li>Elite contact and K-rate (8.7%)</li><li>Quality AB rate 68%</li><li>9-player core with 3+ seasons together</li><li>Frate / Rehl middle-order power</li><li>~95% stolen-base success</li></ul></div>
+<div class="card"><h3 class="dn">Weaknesses</h3><ul><li>Walks allowed (23% of BF)</li><li>Buss and Thomas Jr. production dip</li><li>Few hard-hit balls from bottom of order</li><li>Thin proven pitching depth</li></ul></div>
+<div class="card"><h3 style="color:var(--b)">Opportunities</h3><ul><li>Pfeifer: best staff line (3.32 ERA, .150 BAA) but 3 HBP and 2 errors</li><li>Turn 26% walk rate into runs via aggressive-on-strikes plan</li><li>Develop Caterino and Bryant (strong QAB, fielding)</li><li>Spring prep to repeat 2026 power</li></ul></div>
+<div class="card"><h3 style="color:var(--a)">Threats</h3><ul><li>13U pitchers are faster; hitters like Rehl are being walked (40% BB)</li><li>Stronger catcher arms vs. a running offense</li><li>Walk-prone innings extend games and tax arms</li><li>Small samples: 7 games, 3 new players</li></ul></div>
+</div>
+
+<h2>Next steps</h2>
+<div class="card"><ol style="padding-left:18px;margin:4px 0">
+<li>Strike-throwing plan: bullpen sessions with a target of &lt;1 BB/inning; pitch counts and walk tracking for Buss, Rehl, DePompei, Frate.</li>
+<li>Buss: tee and front-toss work on line drives and a lower launch path; check recent mechanics.</li>
+<li>Thomas Jr.: two-strike approach, see more pitches, and review steal reads before running.</li>
+<li>Hitting plan: "take the first strike only if it isn't your pitch" for the walk-heavy middle of the order.</li>
+<li>Use Pfeifer and Stanley as building blocks for more innings; keep Muller as a utility bullpen option.</li>
+<li>Re-run this analysis at ~15 games and again after Spring 2027 prep; set targets of K% ≤ 10, QAB% ≥ 65, BB/BF ≤ 15%.</li>
+</ol></div>
+
+<p class="note">Data: Sharks 10U–13U season exports; players not on the Fall 2026 roster excluded. Opponent quality, ballpark size and game counts differ by season, so treat each fall as a directional read.</p>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+var S=['F23','Sp24','F24','Sp25','F25','Sp26','F26'];
+var cs=getComputedStyle(document.documentElement);
+function C(v){return cs.getPropertyValue(v).trim()}
+function opts(y){var tx=C('--mu');return{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+plugins:{legend:{labels:{color:tx,boxWidth:10,font:{size:11}}}},
+scales:{x:{ticks:{color:tx,font:{size:11}},grid:{color:'rgba(128,128,128,.15)'}},
+y:{ticks:{color:tx,font:{size:11}},grid:{color:'rgba(128,128,128,.15)'},title:{display:!!y,text:y,color:tx}}}}}
+function L(l,d,c,x){return Object.assign({label:l,data:d,borderColor:c,backgroundColor:c,tension:.25,pointRadius:3,borderWidth:2},x||{})}
+if(window.Chart){
+new Chart('c1',{type:'line',data:{labels:S,datasets:[L('OPS',[1.177,1.074,1.159,1.009,.977,1.129,1.082],C('--b')),L('OBP',[.567,.536,.603,.508,.489,.506,.567],C('--g')),L('SLG',[.61,.538,.556,.501,.488,.623,.515],C('--a'))]},options:opts()});
+new Chart('c2',{type:'line',data:{labels:S,datasets:[L('QAB%',[53.2,52.5,53.3,60.2,63.1,60.8,67.7],C('--g')),L('BB%',[18.2,20.1,20.1,16.4,20.8,15.3,26.2],C('--b')),L('K%',[18.6,18.6,11.6,12.7,21.9,13,8.7],C('--r'))]},options:opts()});
+new Chart('c3',{data:{labels:S,datasets:[{type:'bar',label:'XBH per 100 PA',data:[8.2,8.8,5.5,7.2,6.9,11.2,7.7],backgroundColor:C('--b'),yAxisID:'y'},L('HR',[1,3,0,2,6,23,1],C('--a'),{type:'line',yAxisID:'y1'})]},options:Object.assign(opts(),{scales:Object.assign(opts().scales,{y1:{position:'right',grid:{display:false},ticks:{color:C('--mu'),font:{size:11}}}})})});
+new Chart('c4',{type:'line',data:{labels:S,datasets:[L('ERA (6 inn)',[10.73,7.25,8.57,6.46,6.28,6.16,7.28],C('--r')),L('BB per BF %',[27.3,14.9,17.5,10.8,15.7,14.7,23.1],C('--a'))]},options:opts()});
+}
+var P=[['Frate',null,null,null,null,1.224,1.749,1.443],['Rehl',1.055,.956,1.282,1.114,1.102,1.376,1.450],['Muller',1.440,1.240,1.063,1.011,.700,.960,1.391],['Stanley',.854,.972,.640,.799,1.100,1.030,1.225],['Boykin*',1.083,.914,1.412,.924,.538,.751,1.350],['Thomas Jr.',1.303,.960,1.057,1.277,.750,1.211,.899],['DePompei*',1.050,1.243,1.448,.837,.885,.988,1.000],['English',1.063,1.054,1.209,.858,.949,1.022,.879],['Buss',1.624,1.244,.940,1.226,1.234,1.004,.881],['Pfeifer','','','','','','',.886],['Caterino','','','','','','',.800],['Bryant','','','','','','',.457]];
+var t='<tr><th>Player</th>'+S.map(function(s){return'<th>'+s+'</th>'}).join('')+'<th>Δ</th></tr>';
+P.forEach(function(r){t+='<tr><td>'+r[0]+'</td>';for(var i=1;i<=7;i++){var v=r[i];if(v===null||v===''){t+='<td>–</td>';continue}
+var bg=v>=1.2?'rgba(31,157,85,.45)':v>=1?'rgba(31,157,85,.2)':v>=.8?'rgba(217,138,0,.25)':'rgba(214,69,69,.35)';
+t+='<td style="background:'+bg+'">'+v.toFixed(3).replace(/^0/,'')+'</td>'}
+var d=(typeof r[7]=='number'&&typeof r[6]=='number')?r[7]-r[6]:null;
+t+='<td>'+(d===null?'–':'<span class="'+(d>=0?'up':'dn')+'">'+(d>=0?'+':'')+d.toFixed(2)+'</span>')+'</td></tr>'});
+t+='</table>';document.getElementById('t').innerHTML=t;
+</script></body></html>
