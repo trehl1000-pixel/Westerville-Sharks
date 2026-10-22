@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sharks Stats Dashboard</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--tx:#1a2330;--mu:#5d6b7c;--bd:#dde3ea;--g:#1f9d55;--r:#d64545;--a:#d98a00;--b:#2f6fdb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151c;--card:#19212b;--tx:#e8edf3;--mu:#98a6b6;--bd:#2a3542;--g:#3ec97a;--r:#ff6b6b;--a:#f0a62b;--b:#6ea2ff}}
+:root[data-theme="dark"]{--bg:#10151c;--card:#19212b;--tx:#e8edf3;--mu:#98a6b6;--bd:#2a3542;--g:#3ec97a;--r:#ff6b6b;--a:#f0a62b;--b:#6ea2ff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 -apple-system,system-ui,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:21px;margin:4px 0}h2{font-size:17px;margin:24px 0 8px}h3{font-size:14px;margin:0 0 6px}
+.sub,.note{color:var(--mu);font-size:12.5px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin:10px 0}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.k{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px}.k b{font-size:20px;display:block}.k span{font-size:12px;color:var(--mu)}
+.ch{position:relative;height:230px}
+.grid2{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:640px){.grid2{grid-template-columns:1fr 1fr}.kpis{grid-template-columns:repeat(4,1fr)}}
+select,input,button{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);max-width:100%}
+.up{color:var(--g)}.dn{color:var(--r)}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:520px}
+th,td{padding:5px 6px;text-align:center;border-bottom:1px solid var(--bd)}th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card)}
+tr.p{cursor:pointer}ul{margin:4px 0;padding-left:18px}
+#warn{color:var(--a);font-size:13px}
+</style></head><body><main>
+<h1>⚾ Sharks Stats Dashboard</h1>
+<div class="sub" id="status">Loading…</div>
+<div class="card">
+<label class="note">Add or replace season CSVs (name must contain Fall/Spring + year, e.g. …Fall2026.csv)</label><br>
+<input type="file" id="f" accept=".csv" multiple>
+</div>
+<div style="margin:10px 0"><label class="note">View </label><select id="sel"></select> <span id="warn"></span></div>
+<div class="kpis" id="kp"></div>
+<h2>Trends</h2>
+<div class="card"><h3>Slash line</h3><div class="ch"><canvas id="c1"></canvas></div></div>
+<div class="grid2">
+<div class="card"><h3>Discipline &amp; quality at-bats (%)</h3><div class="ch"><canvas id="c2"></canvas></div></div>
+<div class="card"><h3>Extra-base hits per 100 PA · HR</h3><div class="ch"><canvas id="c3"></canvas></div></div>
+</div>
+<div class="card"><h3>Pitching: ERA (6 inn), WHIP, walks per batter faced (%)</h3><div class="ch"><canvas id="c4"></canvas></div></div>
+<h2>Auto-flags (latest season vs. previous)</h2>
+<div class="card" id="flags"></div>
+<h2>OPS by player <span class="note">(tap a row to drill down)</span></h2>
+<div class="card tw"><table id="t"></table></div>
+<p class="note">Roster = players in the newest season file. Flags need 15+ PA in both seasons and compare OPS, K% and quality-AB%; two or more moving the same way triggers a flag. Small samples are noisy.</p>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+var D={},SE=[],ROS=[],ch={};
+var cs=getComputedStyle(document.documentElement),C=function(v){return cs.getPropertyValue(v).trim()};
+function parse(t){var R=[],r=[],c='',q=false;for(var i=0;i<t.length;i++){var x=t[i];if(q){if(x=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=x}else if(x=='"')q=true;else if(x==','){r.push(c);c=''}else if(x=='\n'||x=='\r'){if(x=='\r'&&t[i+1]=='\n')i++;r.push(c);c='';R.push(r);r=[]}else c+=x}
+if(c||r.length){r.push(c);R.push(r)}return R}
+function ingest(fn,txt){var m=fn.match(/(fall|spring)\s*[_-]?(\d{4})/i);if(!m)return false;
+var s=m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()+' '+m[2],R=parse(txt),h=R[1],ip=h.indexOf('IP'),tc=h.indexOf('TC');
+Object.keys(D).forEach(function(n){delete D[n][s]});
+R.slice(2).forEach(function(r){if(!r[1]||!r[2]||r[0]=='Team'||r[0]=='Glossary')return;var o={};h.forEach(function(k,i){if(i>2)o[(i<ip?'B':i<tc?'P':'F')+k]=r[i]});var n=r[2]+' '+r[1];(D[n]=D[n]||{})[s]=o});
+if(SE.indexOf(s)<0)SE.push(s);SE.sort(function(a,b){var A=a.split(' '),B=b.split(' ');return A[1]-B[1]||(A[0]=='Spring'?-1:1)-(B[0]=='Spring'?-1:1)});return true}
+function N(o,k){return parseFloat(o[k])||0}
+function ipc(x){var w=Math.floor(x);return w+Math.round((x-w)*10)/3}
+function M(L){if(!L.length)return null;var s={};['BPA','BAB','BH','BHR','BBB','BSO','BHBP','BSF','BSB','BCS','BQAB','BTB','BXBH','PER','PH','PBB','PSO','PBF','FTC','FE'].forEach(function(k){s[k]=0});
+var ip=0;L.forEach(function(o){for(var k in s)s[k]+=N(o,k=='BBB'?'BBB':k=='BSO'?'BSO':k);ip+=ipc(N(o,'PIP'))});
+var obp=(s.BH+s.BBB+s.BHBP)/Math.max(1,s.BAB+s.BBB+s.BHBP+s.BSF),slg=s.BTB/Math.max(1,s.BAB),pa=s.BPA||1;
+return{pa:s.BPA,avg:s.BH/Math.max(1,s.BAB),obp:obp,slg:slg,ops:obp+slg,bb:s.BBB/pa*100,k:s.BSO/pa*100,qab:s.BQAB/pa*100,xbh:s.BXBH/pa*100,hr:s.BHR,sb:s.BSB,
+ip:ip,era:ip?s.PER*6/ip:null,whip:ip?(s.PH+s.PBB)/ip:null,bbbf:s.PBF?s.PBB/s.PBF*100:null,fp:s.FTC?(s.FTC-s.FE)/s.FTC:null}}
+function rows(sel,s){var a=sel?[(D[sel]||{})[s]]:ROS.map(function(n){return D[n][s]});return a.filter(Boolean)}
+function f3(v){return v==null?'–':v.toFixed(3).replace(/^0/,'')}
+function opt(){var t=C('--mu');return{responsive:true,maintainAspectRatio:false,spanGaps:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:t,boxWidth:10,font:{size:11}}}},scales:{x:{ticks:{color:t,font:{size:11}},grid:{color:'rgba(128,128,128,.15)'}},y:{ticks:{color:t,font:{size:11}},grid:{color:'rgba(128,128,128,.15)'}}}}}
+function L(l,d,c,x){return Object.assign({label:l,data:d,borderColor:c,backgroundColor:c,tension:.25,pointRadius:3,borderWidth:2},x||{})}
+function mk(id,cfg){if(ch[id])ch[id].destroy();ch[id]=new Chart(id,cfg)}
+function render(){var sel=document.getElementById('sel').value,lab=SE.map(function(s){return s.replace('Fall ','F').replace('Spring ','Sp').replace(/ 20/,'')}),
+Ms=SE.map(function(s){var m=M(rows(sel,s));return m&&m.pa>0?m:null});
+function g(k,d){return Ms.map(function(m){return m&&m[k]!=null?+(+m[k]).toFixed(d):null})}
+var last=Ms[Ms.length-1],kp='';
+if(last){var pv=Ms.slice(0,-1).filter(Boolean).pop();function K(l,v,p,lo){var d=pv&&p?(v-p):null,cl=d==null?'':((lo?d<0:d>0)?'up':'dn');return'<div class="k"><b class="'+cl+'">'+l[1](v)+'</b><span>'+l[0]+(d==null?'':' · '+(d>0?'+':'')+l[2](d)+' vs prev')+'</span></div>'}
+var P=function(x){return x.toFixed(1)+'%'};
+kp=K(['OPS',f3,f3],last.ops,pv&&pv.ops)+K(['K%',P,function(x){return x.toFixed(1)}],last.k,pv&&pv.k,1)+K(['Quality AB',P,function(x){return x.toFixed(1)}],last.qab,pv&&pv.qab)+K(['XBH / 100 PA',function(x){return x.toFixed(1)},function(x){return x.toFixed(1)}],last.xbh,pv&&pv.xbh)}
+document.getElementById('kp').innerHTML=kp;document.getElementById('warn').textContent=last&&last.pa<20?'⚠ only '+last.pa+' PA in latest season – small sample':'';
+mk('c1',{type:'line',data:{labels:lab,datasets:[L('OPS',g('ops',3),C('--b')),L('OBP',g('obp',3),C('--g')),L('SLG',g('slg',3),C('--a'))]},options:opt()});
+mk('c2',{type:'line',data:{labels:lab,datasets:[L('QAB%',g('qab',1),C('--g')),L('BB%',g('bb',1),C('--b')),L('K%',g('k',1),C('--r'))]},options:opt()});
+var o3=opt();o3.scales.y1={position:'right',grid:{display:false},ticks:{color:C('--mu'),font:{size:11}}};
+mk('c3',{data:{labels:lab,datasets:[{type:'bar',label:'XBH/100 PA',data:g('xbh',1),backgroundColor:C('--b')},L('HR',g('hr',0),C('--a'),{type:'line',yAxisID:'y1'})]},options:o3});
+mk('c4',{type:'line',data:{labels:lab,datasets:[L('ERA/6',g('era',2),C('--r')),L('WHIP',g('whip',2),C('--b')),L('BB/BF%',g('bbbf',1),C('--a'))]},options:opt()})}
+function table(){var hd='<tr><th>Player</th>'+SE.map(function(s){return'<th>'+s.replace('Fall ','F').replace('Spring ','Sp').replace(/ 20/,'')+'</th>'}).join('')+'</tr>',t=hd;
+ROS.forEach(function(n){t+='<tr class="p" data-n="'+n+'"><td>'+n+'</td>';SE.forEach(function(s){var m=D[n][s]?M([D[n][s]]):null;if(!m||!m.pa){t+='<td>–</td>';return}var v=m.ops,bg=v>=1.2?'rgba(31,157,85,.45)':v>=1?'rgba(31,157,85,.2)':v>=.8?'rgba(217,138,0,.25)':'rgba(214,69,69,.35)';t+='<td style="background:'+bg+'" title="'+m.pa+' PA">'+f3(v)+(m.pa<15?'*':'')+'</td>'});t+='</tr>'});
+var e=document.getElementById('t');e.innerHTML=t+'<tr><td colspan="'+(SE.length+1)+'" class="note">* under 15 PA</td></tr>';
+e.querySelectorAll('tr.p').forEach(function(r){r.onclick=function(){document.getElementById('sel').value=r.dataset.n;render();window.scrollTo({top:0,behavior:'smooth'})}})}
+function flags(){var up=[],dn=[],a=SE[SE.length-1];ROS.forEach(function(n){var ss=SE.filter(function(s){return D[n][s]}),cur=D[n][a]&&M([D[n][a]]);if(!cur||cur.pa<15||ss.length<2)return;
+var pv=null;for(var i=ss.length-2;i>=0;i--){var m=M([D[n][ss[i]]]);if(m.pa>=15){pv=m;break}}if(!pv)return;
+var d=[cur.ops-pv.ops,pv.k-cur.k,cur.qab-pv.qab],good=d.filter(function(x){return x>0}).length,bad=d.filter(function(x){return x<0}).length,txt='<li><b>'+n+'</b> <span class="note">OPS '+(d[0]>0?'+':'')+d[0].toFixed(2)+' · K% '+(d[1]>0?'−':'+')+Math.abs(d[1]).toFixed(1)+' · QAB '+(d[2]>0?'+':'')+d[2].toFixed(1)+'</span></li>';
+if(good>=2)up.push(txt);else if(bad>=2)dn.push(txt)});
+document.getElementById('flags').innerHTML='<h3 class="up">Keep on trajectory</h3><ul>'+(up.join('')||'<li class="note">none</li>')+'</ul><h3 class="dn">Watch / adjust</h3><ul>'+(dn.join('')||'<li class="note">none</li>')+'</ul>'}
+function refresh(){if(!SE.length)return;var a=SE[SE.length-1];ROS=Object.keys(D).filter(function(n){return D[n][a]});
+var s=document.getElementById('sel'),cur=s.value;s.innerHTML='<option value="">Team (roster)</option>'+ROS.slice().sort().map(function(n){return'<option>'+n+'</option>'}).join('');if(ROS.indexOf(cur)>=0)s.value=cur;
+document.getElementById('status').textContent=SE.length+' seasons loaded ('+SE[0]+' → '+a+') · '+ROS.length+' players on the '+a+' roster';render();table();flags()}
+document.getElementById('sel').onchange=render;
+document.getElementById('f').onchange=function(e){var fs=[].slice.call(e.target.files),n=fs.length;fs.forEach(function(f){var r=new FileReader();r.onload=function(){ingest(f.name,r.result);if(--n==0)refresh()};r.readAsText(f)})};
+function load(){var h=location.hostname,p=location.pathname.split('/')[1],base='data/';
+if(!/github\.io$/.test(h)){document.getElementById('status').textContent='Pick your season CSV files above to begin.';return}
+fetch('https://api.github.com/repos/'+h.split('.')[0]+'/'+p+'/contents/data').then(function(r){return r.json()}).then(function(l){return l.map(function(x){return x.name})}).catch(function(){return fetch(base+'manifest.json').then(function(r){return r.json()})})
+.then(function(names){names=names.filter(function(n){return/\.csv$/i.test(n)});var n=names.length;names.forEach(function(nm){fetch(base+encodeURIComponent(nm)).then(function(r){return r.text()}).then(function(t){ingest(nm,t)}).finally(function(){if(--n==0)refresh()})})}).catch(function(){document.getElementById('status').textContent='Could not read the data folder – use the file picker above.'})}
+load();
+</script></body></html>
